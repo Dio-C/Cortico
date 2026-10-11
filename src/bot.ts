@@ -457,7 +457,7 @@ export function deriveWorldFacts(
     } catch {
       decl = undefined;
     }
-    const label = decl?.label ?? slot.label;
+    const label = decl?.label ?? assembly.labelIn(slot.id, language);
     if (!slot.mounted) {
       return { id: slot.id, status: 'inactive' as const, label, declared: slot.declared };
     }
@@ -478,7 +478,7 @@ export function deriveWorldFacts(
   const missing: WorldFacts[] = assembly.missing.map((m) => ({
     id: m.id,
     status: 'missing' as const,
-    label: m.label,
+    label: assembly.labelIn(m.id, language),
     declared: m.declared ?? true,
     reason: m.reason(language),
   }));
@@ -516,7 +516,7 @@ export function builtinExtensions(assembly: WorldAssembly, set: ExtensionSet, la
   const worlds = candidates.filter((world) => !external.has(world.id)).flatMap((world): ExtensionInfo[] => {
     const slot = assembly.slots.find((item) => item.id === world.id);
     const missing = assembly.missing.find((item) => item.id === world.id);
-    const base = { ...common, name: `builtin:world:${world.id}`, kind: 'world' as const, worldId: world.id, label: slot?.label ?? world.label };
+    const base = { ...common, name: `builtin:world:${world.id}`, kind: 'world' as const, worldId: world.id, label: assembly.labelIn(world.id, language) };
     if (slot) return [{ ...base, loaded: true, state: 'loaded' }];
     if (missing) return [{ ...base, loaded: false, state: 'failed', reason: missing.reason(language) }];
     return [];
@@ -534,17 +534,23 @@ export function builtinExtensions(assembly: WorldAssembly, set: ExtensionSet, la
 
 /**
  * 扩展条目在本进程的运行状态:World 看挂载与对 agent 是否可见,provider 与 bot 看启动时是否加载。
- * 已卸载的条目不算生效。
+ * 已卸载的条目不算生效。有实例的 World 名按 `language` 现取,外部扩展的名字因此也跟界面语言走。
  */
 export function extensionRuntimeState(
   assembly: WorldAssembly,
   isWorldVisible: (id: string) => boolean,
-): (item: ExtensionInfo) => ExtensionInfo {
-  return (item) => {
+): (item: ExtensionInfo, language: Language) => ExtensionInfo {
+  return (item, language) => {
     if (item.state === 'removed') return { ...item, enabled: false };
     if (item.kind === 'world' && item.worldId) {
-      const mounted = assembly.slots.some((slot) => slot.id === item.worldId && slot.mounted);
-      return { ...item, enabled: mounted, ...(mounted && !isWorldVisible(item.worldId) ? { hidden: true } : {}) };
+      const slot = assembly.slots.find((s) => s.id === item.worldId);
+      const mounted = slot?.mounted ?? false;
+      return {
+        ...item,
+        ...(slot ? { label: assembly.labelIn(slot.id, language) } : {}),
+        enabled: mounted,
+        ...(mounted && !isWorldVisible(item.worldId) ? { hidden: true } : {}),
+      };
     }
     return { ...item, enabled: item.loaded && item.state === 'loaded' };
   };
@@ -756,7 +762,6 @@ export function deriveConsolePageSources(
   extra?: (language: Language) => ConsolePageContribution[],
 ): () => ConsolePageSource[] {
   const { assembly } = parts;
-  const labelOf = (id: string): string => assembly.labelOf(id) ?? id;
   return () => {
     // 每次枚举按语言缓存状态，供同一批 contribute() 调用共享。
     const once = new Map<Language, Map<string, WorldFacts>>();
@@ -772,8 +777,10 @@ export function deriveConsolePageSources(
     const ids = [...assembly.slots.map((s) => s.id), ...assembly.missing.map((m) => m.id)];
     const sources: ConsolePageSource[] = ids.map((id) => ({
       id: pageIdFor('world', id),
-      contribute: (language) =>
-        ioPageContribution(id, labelOf(id), infos(language).get(id), instances.get(id), language),
+      contribute: (language) => {
+        const info = infos(language).get(id);
+        return ioPageContribution(id, info?.label ?? id, info, instances.get(id), language);
+      },
     }));
 
     const persona = parts.persona;
@@ -1002,7 +1009,8 @@ export function createBot<C extends CoreConfig>(
           core.setWorldVisible(id, visible);
           notifyLifecycle({ kind: 'visibility', id, label: assembly.labelOf(id) ?? id, visible });
           const t = botText(language).visibility;
-          return visible ? t.shown(id) : t.hidden(id);
+          const label = assembly.labelIn(id, language);
+          return visible ? t.shown(label) : t.hidden(label);
         },
       },
       sessionControl: {
@@ -1054,12 +1062,11 @@ export function createBot<C extends CoreConfig>(
         },
       },
       toolSchemas: {
-        list: () => {
+        list: (language) => {
 
           const byWorld = new Map<string, ToolOwner>();
           for (const m of assembly.mounted) {
-            const label = assembly.labelOf(m.id);
-            const owner: ToolOwner = { kind: 'world', id: m.id, ...(label ? { label } : {}) };
+            const owner: ToolOwner = { kind: 'world', id: m.id, label: assembly.labelIn(m.id, language) };
             for (const t of m.tools()) byWorld.set(t.name, owner);
           }
           const extras = (contribution.extraToolSchemas?.() ?? []).map((s) => ({ ...s, tags: [] }));
