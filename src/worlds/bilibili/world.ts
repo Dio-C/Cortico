@@ -5,7 +5,6 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type {
   CandidateProjector,
-  ConfigGroup,
   World,
   WorldHost,
   WorldConsoleDecl,
@@ -28,7 +27,6 @@ import { normalize, type CountField, type GaugeField, type LiveEvent } from './n
 import { AgentAnnouncementStore } from './overlay/announcement.ts';
 import { OverlayAssetStore } from './overlay/assets.ts';
 import {
-  BILIBILI_OVERLAY_DEFAULTS,
   BUILTIN_OVERLAY_STYLES,
   cloneOverlayConfig,
   matchAudienceGroup,
@@ -231,8 +229,6 @@ export class BilibiliWorld implements World {
   private readonly identified: boolean[] = [];
 
   private anonymousLoginReported = false;
-  /** 登录 uid；0 表示匿名。 */
-  private loginUid = 0;
 
   private coalesceFolds = 0;
   private coalesceFoldedItems = 0;
@@ -402,7 +398,6 @@ export class BilibiliWorld implements World {
     this.feedOutageReported = false;
     this.shutdownChecks = () => [];
     this.anonymousLoginReported = false;
-    this.loginUid = 0;
     this.coalesceFolds = 0;
     this.coalesceFoldedItems = 0;
     this.coalesceLogAt = Date.now();
@@ -1030,7 +1025,6 @@ export class BilibiliWorld implements World {
 
   private onLiveStatus(status: LiveStatus): void {
     this.status = status;
-    this.loginUid = status.selfUid;
     this.checkAnonymousLogin(status);
     this.trackFeedPhase(status.phase);
     const roomId = status.realRoomId ?? status.roomId;
