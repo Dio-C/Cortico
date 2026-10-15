@@ -36,7 +36,7 @@ SameSite=Strict、Max-Age 取浏览器上限 400 天;请求经 HTTPS 或反向�
 | `providers` | 模型供应商 | 端点表(见 [providers.md](providers.md)) |
 | `world` | World 总览 | World 激活、停用、重启和状态 |
 | `extensions` | 扩展 | 安装、删除、npm 搜索、更新检查与安装历史版本（见 [extensions.md](extensions.md)） |
-| `prompts` | 系统提示词 | 前缀各段的模板 |
+| `prompts` | 系统提示词 | 前缀各段的模板;完整前缀按已保存文件渲染 |
 | `settings` / `appearance` | 设置 | 语言、外观;入口是左栏底部那颗齿轮,不占左栏的行 |
 
 终端页在部署目录里还挂着 `.onboarding` 标记时(自建部署写下的一次性开关,见
