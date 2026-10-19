@@ -21,6 +21,7 @@
 </p>
 
 <p align="center">
+  <a href="https://palailab.org">Website</a> ｜
   <a href="#quick-start">Quick Start</a> ｜
   <a href="#the-four-layers">Architecture</a> ｜
   <a href="#documentation">Documentation</a> ｜

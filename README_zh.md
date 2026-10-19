@@ -21,6 +21,7 @@
 </p>
 
 <p align="center">
+  <a href="https://palailab.org">官网</a> ｜
   <a href="#快速开始">快速开始</a> ｜
   <a href="#四层设计">四层设计</a> ｜
   <a href="#文档">文档</a> ｜
