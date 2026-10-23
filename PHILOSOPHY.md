@@ -7,7 +7,7 @@ Cortico 不是什么
 
 Cortico 不是问答式聊天 Bot 框架
 Cortico 不是一个预设的角色/人格或记忆方案
-Cortico 不是面向解决用户问题或完成编码任务的 Agent Harness / Coding Agent
+Cortico 不是面向解决工程问题或完成编码任务的 Agent Harness / Coding Agent
 
 Cortico的四层设计
 
@@ -60,7 +60,7 @@ What Cortico is not
 
 Cortico is not a framework for question-and-answer chat bots.
 Cortico is not a preset character, persona or memory scheme.
-Cortico is not an Agent Harness / Coding Agent aimed at solving a user's problems or finishing coding tasks.
+Cortico is not an Agent Harness / Coding Agent aimed at solving engineering problems or finishing coding tasks.
 
 Cortico's four layers
 
