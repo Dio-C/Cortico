@@ -13,8 +13,12 @@ WS 地址与 token,保存后进程重启。
 
 SnowLuma:
 
-- 注入本机已安装并在运行的 QQNT 客户端,在 QQ 窗口里扫码登录;账号登录后它才开始监听
-  OneBot 端口,这之前 World 按退避重连。
+- 注入本机已安装并在运行的 QQNT 客户端:先在 QQ 窗口里登录,登录完成后在 SnowLuma WebUI
+  对这个 QQ 点「加载」。在登录界面就注入,QQ 服务器端会登录失败,SnowLuma 却仍显示在线。
+  注入后它才开始监听 OneBot 端口,这之前 World 按退避重连。
+- QQ 或电脑重启后,SnowLuma 不会自己接上新的 QQ 进程:等 QQ 登录完成,再点一次「加载」。
+  不建议打开 `hookAutoLoad`,它在 QQ 进程启动时就注入,那时还在登录界面。QQ World 断线期间
+  一直退避重连,不用重启 Cortico。
 - 正向 WS 默认 `ws://127.0.0.1:3001`,与 `worlds.qq.wsUrl` 的默认值相同。token 在首次运行时
   按账号随机生成,写在 SnowLuma 目录的 `config/onebot_<QQ号>.json`。
 - 它的状态命令默认开启:群里有人发 `#sl`,账号会自动回一条状态消息,这条消息不经过起草-确认门。
